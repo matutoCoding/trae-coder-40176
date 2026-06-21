@@ -9,7 +9,7 @@ import type {
   ReminderInfo,
   PurchaseRecord
 } from '@/types'
-import { mockPharmacies } from '@/data/mock'
+import { mockPharmacies, mockMedicines, mockElders, mockPurchaseRecords } from '@/data/mock'
 import { buildReminderInfo, calculateRemainingDays, getReminderLevel } from '@/utils/medicine'
 
 export const OWNER_SELF = 'self'
@@ -97,7 +97,10 @@ interface AppState {
   addMedicine: (medicine: Omit<Medicine, 'id'>) => void
   updateMedicine: (id: string, medicine: Partial<Medicine>) => void
   removeMedicine: (id: string) => void
-  addPurchaseRecord: (record: Omit<PurchaseRecord, 'id'>) => void
+  recordPurchase: (
+    medicineId: string,
+    data: { quantity: number; purchaseDate: string; pharmacyId: string }
+  ) => void
   getPurchaseRecordsByMedicine: (medicineId: string) => PurchaseRecord[]
   getPharmacyById: (id: string) => Pharmacy | undefined
   getReminders: () => ReminderInfo[]
@@ -110,14 +113,29 @@ interface AppState {
 }
 
 const rawMedicines = loadStorage<(Medicine | { ownerId?: string })[]>(STORAGE_KEYS.medicines, [])
-const initialMedicines = migrateMedicines(rawMedicines)
-const initialElders = loadStorage<ElderInfo[]>(STORAGE_KEYS.elders, [])
+const initialMedicines = rawMedicines.length > 0 ? migrateMedicines(rawMedicines) : mockMedicines
+const initialElders = loadStorage<ElderInfo[]>(STORAGE_KEYS.elders, []).length > 0
+  ? loadStorage<ElderInfo[]>(STORAGE_KEYS.elders, [])
+  : mockElders
 const initialNoticeStatuses = loadStorage<Record<string, FamilyNotice['status']>>(
   STORAGE_KEYS.noticeStatus,
   {}
 )
-const initialPurchaseRecords = loadStorage<PurchaseRecord[]>(STORAGE_KEYS.purchaseRecords, [])
+const hasRecordsStorage = loadStorage<PurchaseRecord[]>(STORAGE_KEYS.purchaseRecords, []).length > 0
+const initialPurchaseRecords = hasRecordsStorage
+  ? loadStorage<PurchaseRecord[]>(STORAGE_KEYS.purchaseRecords, [])
+  : mockPurchaseRecords
 const initialUserRole = loadStorage<'member' | 'family'>(STORAGE_KEYS.userRole, 'member')
+
+if (rawMedicines.length === 0) {
+  saveStorage(STORAGE_KEYS.medicines, mockMedicines)
+}
+if (loadStorage<ElderInfo[]>(STORAGE_KEYS.elders, []).length === 0) {
+  saveStorage(STORAGE_KEYS.elders, mockElders)
+}
+if (!hasRecordsStorage) {
+  saveStorage(STORAGE_KEYS.purchaseRecords, mockPurchaseRecords)
+}
 
 const initialFamilyNotices = buildFamilyNotices(
   initialElders,
@@ -171,28 +189,34 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   updateMedicine: (id, medicine) => {
+    const oldMed = get().medicines.find((m) => m.id === id)
+    if (!oldMed) return
+
     const newMedicines = get().medicines.map((m) => (m.id === id ? { ...m, ...medicine } : m))
     saveStorage(STORAGE_KEYS.medicines, newMedicines)
 
-    if (medicine.lastPurchaseDate || medicine.lastPurchaseQuantity || medicine.pharmacyId) {
-      const target = newMedicines.find((m) => m.id === id)
-      if (target) {
-        const pharmacy = get().pharmacies.find(
-          (p) => p.id === (medicine.pharmacyId || target.pharmacyId)
-        )
-        const newRecord: PurchaseRecord = {
-          id: `r${Date.now()}`,
-          medicineId: target.id,
-          ownerId: target.ownerId,
-          pharmacyId: medicine.pharmacyId || target.pharmacyId,
-          pharmacyName: pharmacy?.name || '',
-          quantity: medicine.lastPurchaseQuantity || target.lastPurchaseQuantity,
-          purchaseDate: medicine.lastPurchaseDate || target.lastPurchaseDate
-        }
-        const newRecords = [...get().purchaseRecords, newRecord]
-        saveStorage(STORAGE_KEYS.purchaseRecords, newRecords)
-        set({ purchaseRecords: newRecords })
+    const newMed = newMedicines.find((m) => m.id === id)!
+    const purchaseChanged =
+      (medicine.lastPurchaseDate !== undefined &&
+        medicine.lastPurchaseDate !== oldMed.lastPurchaseDate) ||
+      (medicine.lastPurchaseQuantity !== undefined &&
+        medicine.lastPurchaseQuantity !== oldMed.lastPurchaseQuantity) ||
+      (medicine.pharmacyId !== undefined && medicine.pharmacyId !== oldMed.pharmacyId)
+
+    if (purchaseChanged) {
+      const pharmacy = get().pharmacies.find((p) => p.id === newMed.pharmacyId)
+      const newRecord: PurchaseRecord = {
+        id: `r${Date.now()}`,
+        medicineId: newMed.id,
+        ownerId: newMed.ownerId,
+        pharmacyId: newMed.pharmacyId,
+        pharmacyName: pharmacy?.name || '',
+        quantity: newMed.lastPurchaseQuantity,
+        purchaseDate: newMed.lastPurchaseDate
       }
+      const newRecords = [...get().purchaseRecords, newRecord]
+      saveStorage(STORAGE_KEYS.purchaseRecords, newRecords)
+      set({ purchaseRecords: newRecords })
     }
 
     const familyNotices = buildFamilyNotices(
@@ -223,16 +247,50 @@ export const useAppStore = create<AppState>((set, get) => ({
       get().pharmacies,
       newStatuses
     )
-    set({ medicines: newMedicines, purchaseRecords: newRecords, noticeStatuses: newStatuses, familyNotices })
+    set({
+      medicines: newMedicines,
+      purchaseRecords: newRecords,
+      noticeStatuses: newStatuses,
+      familyNotices
+    })
   },
 
-  addPurchaseRecord: (record) => {
-    const newRecords = [
-      ...get().purchaseRecords,
-      { ...record, id: `r${Date.now()}` }
-    ]
+  recordPurchase: (medicineId, data) => {
+    const med = get().medicines.find((m) => m.id === medicineId)
+    if (!med) return
+
+    const newMedicines = get().medicines.map((m) =>
+      m.id === medicineId
+        ? {
+            ...m,
+            lastPurchaseQuantity: data.quantity,
+            lastPurchaseDate: data.purchaseDate,
+            pharmacyId: data.pharmacyId
+          }
+        : m
+    )
+    saveStorage(STORAGE_KEYS.medicines, newMedicines)
+
+    const pharmacy = get().pharmacies.find((p) => p.id === data.pharmacyId)
+    const newRecord: PurchaseRecord = {
+      id: `r${Date.now()}`,
+      medicineId,
+      ownerId: med.ownerId,
+      pharmacyId: data.pharmacyId,
+      pharmacyName: pharmacy?.name || '',
+      quantity: data.quantity,
+      purchaseDate: data.purchaseDate
+    }
+    const newRecords = [...get().purchaseRecords, newRecord]
     saveStorage(STORAGE_KEYS.purchaseRecords, newRecords)
-    set({ purchaseRecords: newRecords })
+
+    const familyNotices = buildFamilyNotices(
+      get().elders,
+      newMedicines,
+      get().pharmacies,
+      get().noticeStatuses
+    )
+    set({ medicines: newMedicines, purchaseRecords: newRecords, familyNotices })
   },
 
   getPurchaseRecordsByMedicine: (medicineId) => {
@@ -258,14 +316,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   getLastPharmacy: () => {
     const { purchaseRecords, pharmacies } = get()
-    if (purchaseRecords.length === 0) {
-      const { medicines } = get()
-      if (medicines.length === 0) return null
-      const sorted = [...medicines].sort(
-        (a, b) => new Date(b.lastPurchaseDate).getTime() - new Date(a.lastPurchaseDate).getTime()
-      )
-      return pharmacies.find((p) => p.id === sorted[0].pharmacyId) || null
-    }
+    if (purchaseRecords.length === 0) return null
     const sorted = [...purchaseRecords].sort(
       (a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime()
     )

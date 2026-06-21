@@ -1,4 +1,4 @@
-import type { Medicine, Pharmacy, ElderInfo, FamilyNotice } from '@/types'
+import type { Medicine, Pharmacy, ElderInfo, FamilyNotice, PurchaseRecord } from '@/types'
 import dayjs from 'dayjs'
 
 export const mockPharmacies: Pharmacy[] = [
@@ -34,7 +34,8 @@ export const mockMedicines: Medicine[] = [
     frequencyPerDay: 1,
     dosagePerTime: 1,
     pharmacyId: 'p1',
-    notes: '降压药，每日早餐后服用'
+    notes: '降压药，每日早餐后服用',
+    ownerId: 'e1'
   },
   {
     id: 'm2',
@@ -45,7 +46,8 @@ export const mockMedicines: Medicine[] = [
     frequencyPerDay: 2,
     dosagePerTime: 1,
     pharmacyId: 'p1',
-    notes: '降糖药，早晚餐中服用'
+    notes: '降糖药，早晚餐中服用',
+    ownerId: 'e1'
   },
   {
     id: 'm3',
@@ -56,7 +58,8 @@ export const mockMedicines: Medicine[] = [
     frequencyPerDay: 1,
     dosagePerTime: 1,
     pharmacyId: 'p2',
-    notes: '降脂药，每晚睡前服用'
+    notes: '降脂药，每晚睡前服用',
+    ownerId: 'self'
   }
 ]
 
@@ -69,26 +72,58 @@ export const mockElders: ElderInfo[] = [
   }
 ]
 
+export const mockPurchaseRecords: PurchaseRecord[] = [
+  {
+    id: 'r1',
+    medicineId: 'm1',
+    ownerId: 'e1',
+    pharmacyId: 'p1',
+    pharmacyName: '康宁大药房（文化路店）',
+    quantity: 30,
+    purchaseDate: dayjs().subtract(28, 'day').format('YYYY-MM-DD')
+  },
+  {
+    id: 'r2',
+    medicineId: 'm2',
+    ownerId: 'e1',
+    pharmacyId: 'p1',
+    pharmacyName: '康宁大药房（文化路店）',
+    quantity: 60,
+    purchaseDate: dayjs().subtract(25, 'day').format('YYYY-MM-DD')
+  },
+  {
+    id: 'r3',
+    medicineId: 'm3',
+    ownerId: 'self',
+    pharmacyId: 'p2',
+    pharmacyName: '仁德堂药店（中心店）',
+    quantity: 28,
+    purchaseDate: dayjs().subtract(5, 'day').format('YYYY-MM-DD')
+  }
+]
+
 export const mockFamilyNotices: FamilyNotice[] = [
   {
-    id: 'n1',
+    id: 'e1_m1',
     elderId: 'e1',
+    medicineId: 'm1',
     elderName: '张建国',
     elderNickname: '爸爸',
-    medicineName: '苯磺酸氨氯地平片（降压药）',
+    medicineName: '苯磺酸氨氯地平片',
     remainingDays: 2,
     level: 'orange',
     createdTime: dayjs().subtract(2, 'hour').format('YYYY-MM-DD HH:mm'),
     status: 'pending'
   },
   {
-    id: 'n2',
+    id: 'e1_m2',
     elderId: 'e1',
+    medicineId: 'm2',
     elderName: '张建国',
     elderNickname: '爸爸',
-    medicineName: '盐酸二甲双胍缓释片（降糖药）',
+    medicineName: '盐酸二甲双胍缓释片',
     remainingDays: 5,
-    level: 'green',
+    level: 'yellow',
     createdTime: dayjs().subtract(1, 'day').format('YYYY-MM-DD HH:mm'),
     status: 'reminded'
   }
