@@ -82,6 +82,16 @@
   flex: 1;
 }
 
+.ownerTag {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+  background: $color-primary-bg;
+  color: $color-primary;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
 .daysValue {
   font-size: 36rpx;
   font-weight: 700;

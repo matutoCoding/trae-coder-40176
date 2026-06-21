@@ -51,6 +51,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .thingValue {
@@ -80,6 +85,14 @@
   font-size: 26rpx;
   color: $color-text-secondary;
   line-height: 1.4;
+  white-space: pre-line;
+}
+
+.clickHint {
+  display: block;
+  font-size: 22rpx;
+  color: $color-primary;
+  margin-top: 4rpx;
 }
 
 .remindersSection {

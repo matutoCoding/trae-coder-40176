@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import classnames from 'classnames'
+import { useAppStore, OWNER_SELF } from '@/store'
 import type { Medicine, Pharmacy } from '@/types'
 import { calculateRemainingDays, getReminderLevel, getLevelText, formatDate } from '@/utils/medicine'
 import styles from './index.module.scss'
@@ -13,8 +14,16 @@ interface MedicineItemProps {
 }
 
 const MedicineItem: React.FC<MedicineItemProps> = ({ medicine, pharmacy, onClick }) => {
+  const { elders } = useAppStore()
   const remainingDays = calculateRemainingDays(medicine)
   const level = getReminderLevel(remainingDays)
+
+  const ownerLabel = useMemo(() => {
+    if (medicine.ownerId === OWNER_SELF) return '本人'
+    const elder = elders.find((e) => e.id === medicine.ownerId)
+    if (!elder) return '本人'
+    return `${elder.nickname}（${elder.name}）`
+  }, [medicine.ownerId, elders])
 
   const handleClick = () => {
     if (onClick) {
@@ -32,6 +41,13 @@ const MedicineItem: React.FC<MedicineItemProps> = ({ medicine, pharmacy, onClick
         <Text className={styles.name}>{medicine.name}</Text>
         <Text className={classnames(styles.statusBadge, styles[level])}>
           {getLevelText(level)}
+        </Text>
+      </View>
+
+      <View className={styles.infoRow}>
+        <Text className={styles.label}>用药人</Text>
+        <Text className={styles.value}>
+          <Text className={styles.ownerTag}>{ownerLabel}</Text>
         </Text>
       </View>
 

@@ -6,7 +6,8 @@ export default defineAppConfig({
     'pages/mine/index',
     'pages/reminder-detail/index',
     'pages/medicine-edit/index',
-    'pages/bind-elder/index'
+    'pages/bind-elder/index',
+    'pages/pharmacy-detail/index'
   ],
   window: {
     backgroundTextStyle: 'light',

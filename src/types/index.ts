@@ -21,6 +21,17 @@ export interface Medicine {
   dosagePerTime: number
   pharmacyId: string
   notes?: string
+  ownerId: string
+}
+
+export interface PurchaseRecord {
+  id: string
+  medicineId: string
+  ownerId: string
+  pharmacyId: string
+  pharmacyName: string
+  quantity: number
+  purchaseDate: string
 }
 
 export interface ElderInfo {
@@ -34,6 +45,7 @@ export interface ElderInfo {
 export interface FamilyNotice {
   id: string
   elderId: string
+  medicineId: string
   elderName: string
   elderNickname: string
   medicineName: string

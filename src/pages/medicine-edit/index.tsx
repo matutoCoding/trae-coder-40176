@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { View, Text, Input, Button, Textarea, Picker } from '@tarojs/components'
+import React, { useState, useEffect, useMemo } from 'react'
+import { View, Text, Input, Button, Textarea, Picker, ScrollView } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import dayjs from 'dayjs'
 import classnames from 'classnames'
-import { useAppStore } from '@/store'
+import { useAppStore, OWNER_SELF } from '@/store'
 import BigButton from '@/components/BigButton'
+import { formatDate } from '@/utils/medicine'
 import type { Medicine } from '@/types'
 import styles from './index.module.scss'
 
@@ -16,7 +17,15 @@ const MedicineEditPage: React.FC = () => {
   const scanQty = Number(router.params.scanQty || 0)
   const scanDosage = Number(router.params.scanDosage || 0)
 
-  const { medicines, pharmacies, addMedicine, updateMedicine, removeMedicine } = useAppStore()
+  const {
+    medicines,
+    pharmacies,
+    elders,
+    addMedicine,
+    updateMedicine,
+    removeMedicine,
+    getPurchaseRecordsByMedicine
+  } = useAppStore()
 
   const [name, setName] = useState('')
   const [frequencyPerDay, setFrequencyPerDay] = useState(1)
@@ -24,7 +33,21 @@ const MedicineEditPage: React.FC = () => {
   const [lastPurchaseQuantity, setLastPurchaseQuantity] = useState(30)
   const [lastPurchaseDate, setLastPurchaseDate] = useState(dayjs().format('YYYY-MM-DD'))
   const [pharmacyId, setPharmacyId] = useState(pharmacies[0]?.id || '')
+  const [ownerId, setOwnerId] = useState(OWNER_SELF)
   const [notes, setNotes] = useState('')
+
+  const ownerOptions = useMemo(
+    () => [
+      { id: OWNER_SELF, name: '本人', label: '我自己吃' },
+      ...elders.map((e) => ({ id: e.id, name: e.name, label: `${e.nickname}（${e.name}）` }))
+    ],
+    [elders]
+  )
+
+  const purchaseRecords = useMemo(
+    () => (editId ? getPurchaseRecordsByMedicine(editId) : []),
+    [editId, getPurchaseRecordsByMedicine]
+  )
 
   useEffect(() => {
     if (isEdit) {
@@ -36,6 +59,7 @@ const MedicineEditPage: React.FC = () => {
         setLastPurchaseQuantity(medicine.lastPurchaseQuantity)
         setLastPurchaseDate(medicine.lastPurchaseDate)
         setPharmacyId(medicine.pharmacyId)
+        setOwnerId(medicine.ownerId || OWNER_SELF)
         setNotes(medicine.notes || '')
       }
     } else if (scanName) {
@@ -95,6 +119,7 @@ const MedicineEditPage: React.FC = () => {
       lastPurchaseQuantity,
       lastPurchaseDate,
       pharmacyId,
+      ownerId,
       notes: notes.trim()
     }
 
@@ -126,9 +151,11 @@ const MedicineEditPage: React.FC = () => {
   }
 
   const frequencyOptions = [1, 2, 3, 4]
+  const ownerLabels = ownerOptions.map((o) => o.label)
+  const currentOwnerIndex = Math.max(0, ownerOptions.findIndex((o) => o.id === ownerId))
 
   return (
-    <View className={styles.container}>
+    <ScrollView scrollY className={styles.container}>
       {!isEdit && (
         <View className={styles.scanCard}>
           <Text className={styles.scanIcon}>📱</Text>
@@ -148,6 +175,25 @@ const MedicineEditPage: React.FC = () => {
       </View>
 
       <View className={styles.formCard}>
+        <View className={styles.formItem}>
+          <Text className={styles.formLabel}>
+            <Text className={styles.formRequired}>*</Text>是谁在吃这个药
+          </Text>
+          <Picker
+            mode="selector"
+            range={ownerLabels}
+            value={currentOwnerIndex}
+            onChange={(e) => setOwnerId(ownerOptions[Number(e.detail.value)].id)}
+          >
+            <View className={styles.pharmacySelect}>
+              {ownerOptions[currentOwnerIndex]?.label || '请选择'}
+            </View>
+          </Picker>
+          <View className={styles.pharmacyOption}>
+            选择对应的老人，家属才能看到准确的提醒
+          </View>
+        </View>
+
         <View className={styles.formItem}>
           <Text className={styles.formLabel}>
             <Text className={styles.formRequired}>*</Text>药品名称
@@ -276,6 +322,31 @@ const MedicineEditPage: React.FC = () => {
         </View>
       </View>
 
+      {isEdit && purchaseRecords.length > 0 && (
+        <View className={styles.recordsCard}>
+          <View className={styles.recordsHead}>
+            <Text className={styles.recordsIcon}>📋</Text>
+            <Text className={styles.recordsTitle}>最近购药记录</Text>
+          </View>
+          {purchaseRecords.slice(0, 5).map((record, idx) => (
+            <View key={record.id} className={styles.recordItem}>
+              <View className={styles.recordIndex}>
+                {purchaseRecords.length - idx}
+              </View>
+              <View className={styles.recordMain}>
+                <Text className={styles.recordDate}>{formatDate(record.purchaseDate)}</Text>
+                <Text className={styles.recordDetail}>
+                  {record.pharmacyName || '未知药店'} · {record.quantity}片
+                </Text>
+              </View>
+            </View>
+          ))}
+          {purchaseRecords.length > 5 && (
+            <Text className={styles.recordMore}>还有 {purchaseRecords.length - 5} 条记录</Text>
+          )}
+        </View>
+      )}
+
       {isEdit && (
         <View className={styles.deleteBtn}>
           <BigButton type="danger" onClick={handleDelete}>
@@ -287,7 +358,7 @@ const MedicineEditPage: React.FC = () => {
       <View className={styles.bottomBar}>
         <BigButton onClick={handleSave}>{isEdit ? '保存修改' : '保存药品'}</BigButton>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 

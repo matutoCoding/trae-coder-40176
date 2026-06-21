@@ -9,10 +9,11 @@ import BigButton from '@/components/BigButton'
 import styles from './index.module.scss'
 
 const HomePage: React.FC = () => {
-  const { getReminders, getLastPharmacy, medicines } = useAppStore()
+  const { getReminders, getLastPharmacy, getLastPurchaseRecord, medicines } = useAppStore()
 
   const reminders = useMemo(() => getReminders(), [getReminders])
   const lastPharmacy = useMemo(() => getLastPharmacy(), [getLastPharmacy])
+  const lastRecord = useMemo(() => getLastPurchaseRecord(), [getLastPurchaseRecord])
 
   const sortedReminders = useMemo(() => {
     const levelOrder = { red: 0, orange: 1, yellow: 2, green: 3 }
@@ -46,6 +47,14 @@ const HomePage: React.FC = () => {
 
   const goAddMedicine = () => {
     Taro.navigateTo({ url: '/pages/medicine-edit/index' })
+  }
+
+  const goPharmacyDetail = () => {
+    if (lastPharmacy) {
+      Taro.navigateTo({ url: `/pages/pharmacy-detail/index?pharmacyId=${lastPharmacy.id}` })
+    } else {
+      Taro.showToast({ title: '暂无购药记录', icon: 'none' })
+    }
   }
 
   return (
@@ -88,14 +97,19 @@ const HomePage: React.FC = () => {
             <Text className={styles.thingLabel}>最近的药\n还剩几天</Text>
           </View>
 
-          <View className={styles.thingCard}>
+          <View className={styles.thingCard} onClick={goPharmacyDetail}>
             <Text
               className={classnames(styles.thingValue, styles.greenValue)}
-              style={{ fontSize: '30rpx' }}
+              style={{ fontSize: '28rpx', lineHeight: 1.3 }}
             >
-              {lastPharmacy ? lastPharmacy.name.slice(0, 6) + '...' : '暂无'}
+              {lastPharmacy ? lastPharmacy.name.slice(0, 4) + '\n' + lastPharmacy.name.slice(4, 8) + (lastPharmacy.name.length > 8 ? '...' : '') : '暂无'}
             </Text>
-            <Text className={styles.thingLabel}>最近在哪\n家药店买</Text>
+            <Text className={styles.thingLabel}>
+              最近在哪\n家药店买
+              {lastRecord && (
+                <Text className={styles.clickHint}>（点击查看）</Text>
+              )}
+            </Text>
           </View>
         </View>
       </View>
