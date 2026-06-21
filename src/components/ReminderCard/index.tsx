@@ -3,7 +3,7 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import classnames from 'classnames'
 import type { ReminderInfo } from '@/types'
-import { getLevelText } from '@/utils/medicine'
+import { getLevelText, getLevelTipText } from '@/utils/medicine'
 import styles from './index.module.scss'
 
 interface ReminderCardProps {
@@ -35,9 +35,7 @@ const ReminderCard: React.FC<ReminderCardProps> = ({ reminder, onClick }) => {
       <View className={styles.content}>
         <Text className={styles.daysNumber}>{reminder.remainingDays}</Text>
         <View className={styles.daysLabel}>天后需要补药</View>
-        <Text className={styles.tipText}>
-          {reminder.shouldBuyToday ? '今天就该准备去买药啦' : '还有充足时间，记得提前准备'}
-        </Text>
+        <Text className={styles.tipText}>{getLevelTipText(reminder.level)}</Text>
       </View>
 
       <View className={styles.footer}>

@@ -27,18 +27,30 @@ export const calculateRemainingQuantity = (medicine: Medicine): number => {
 export const getReminderLevel = (remainingDays: number): ReminderLevel => {
   if (remainingDays <= 1) return 'red'
   if (remainingDays <= 3) return 'orange'
+  if (remainingDays <= 7) return 'yellow'
   return 'green'
 }
 
 export const shouldBuyToday = (remainingDays: number): boolean => {
-  return remainingDays <= 3
+  return remainingDays <= 7
 }
 
 export const getLevelText = (level: ReminderLevel): string => {
   const map = {
     green: '药量充足',
+    yellow: '提前准备',
     orange: '记得补药',
     red: '尽快补药'
+  }
+  return map[level]
+}
+
+export const getLevelTipText = (level: ReminderLevel): string => {
+  const map = {
+    green: '药量还充足，安心服用',
+    yellow: '药量开始不多了，提前准备补药',
+    orange: '今天就该准备去买药啦',
+    red: '药快用完了，今天就去买吧'
   }
   return map[level]
 }

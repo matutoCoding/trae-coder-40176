@@ -7,7 +7,7 @@ import BigButton from '@/components/BigButton'
 import styles from './index.module.scss'
 
 const MedicinesPage: React.FC = () => {
-  const { medicines, pharmacies, getPharmacyById } = useAppStore()
+  const { medicines, getPharmacyById } = useAppStore()
 
   const sortedMedicines = useMemo(() => {
     return [...medicines].sort((a, b) => {
@@ -38,13 +38,39 @@ const MedicinesPage: React.FC = () => {
     Taro.navigateTo({ url: '/pages/medicine-edit/index' })
   }
 
-  const goScan = () => {
-    Taro.showModal({
-      title: '请店员帮忙扫码录入',
-      content: '请将手机交给药店店员，由店员扫描药品条码或处方单快速录入信息',
-      confirmText: '我知道了',
-      showCancel: false
-    })
+  const goScan = async () => {
+    try {
+      const res = await Taro.scanCode({
+        scanType: ['barCode', 'qrCode'],
+        onlyFromCamera: false
+      })
+      const rawResult = res.result || ''
+      let scanName = ''
+      let scanQty = 0
+      let scanDosage = 1
+      try {
+        const parsed = JSON.parse(rawResult)
+        scanName = parsed.name || parsed.medicineName || ''
+        scanQty = Number(parsed.quantity || parsed.lastPurchaseQuantity || 0)
+        scanDosage = Number(parsed.dosagePerTime || parsed.dailyDosage || 1)
+      } catch {
+        if (rawResult && rawResult.length > 0) {
+          scanName = rawResult
+          scanQty = 30
+          scanDosage = 1
+        }
+      }
+      const params = []
+      if (scanName) params.push(`scanName=${encodeURIComponent(scanName)}`)
+      if (scanQty > 0) params.push(`scanQty=${scanQty}`)
+      if (scanDosage > 0) params.push(`scanDosage=${scanDosage}`)
+      Taro.navigateTo({
+        url: `/pages/medicine-edit/index${params.length > 0 ? '?' + params.join('&') : ''}`
+      })
+    } catch (e) {
+      console.error('[Medicines] scanCode error', e)
+      Taro.showToast({ title: '扫码取消或失败', icon: 'none' })
+    }
   }
 
   return (
@@ -55,7 +81,7 @@ const MedicinesPage: React.FC = () => {
           <Text className={styles.count}>  共 {medicines.length} 种</Text>
         </View>
         <Button className={styles.scanBtn} onClick={goScan}>
-          找店员扫码录入
+          扫码录入
         </Button>
       </View>
 
@@ -70,7 +96,7 @@ const MedicinesPage: React.FC = () => {
           <View className={styles.btnRow}>
             <View className={styles.btnItem}>
               <BigButton type="secondary" onClick={goScan}>
-                店员扫码
+                扫码录入
               </BigButton>
             </View>
             <View className={styles.btnItem}>
@@ -92,11 +118,11 @@ const MedicinesPage: React.FC = () => {
         <View className={styles.bottomBar}>
           <View className={styles.bottomBtn}>
             <BigButton type="secondary" onClick={goScan}>
-              店员扫码录入
+              扫码录入
             </BigButton>
           </View>
           <View className={styles.bottomBtn}>
-            <BigButton onClick={goAdd}>添加药品</BigButton>
+            <BigButton onClick={goAdd}>手动添加</BigButton>
           </View>
         </View>
       )}

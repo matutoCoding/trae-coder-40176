@@ -57,6 +57,7 @@ const FamilyNotice: React.FC<FamilyNoticeProps> = ({ notice, onUpdateStatus }) =
             className={classnames(
               styles.highlight,
               notice.level === 'green' && styles.greenText,
+              notice.level === 'yellow' && styles.yellowText,
               notice.level === 'orange' && styles.orangeText,
               notice.level === 'red' && styles.redText
             )}
@@ -68,6 +69,7 @@ const FamilyNotice: React.FC<FamilyNoticeProps> = ({ notice, onUpdateStatus }) =
             className={classnames(
               styles.highlight,
               notice.level === 'green' && styles.greenText,
+              notice.level === 'yellow' && styles.yellowText,
               notice.level === 'orange' && styles.orangeText,
               notice.level === 'red' && styles.redText
             )}

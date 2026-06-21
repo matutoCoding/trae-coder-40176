@@ -42,6 +42,11 @@
   color: $color-reminder-green;
 }
 
+.yellow {
+  background: $color-reminder-yellow-bg;
+  color: $color-reminder-yellow;
+}
+
 .orange {
   background: $color-reminder-orange-bg;
   color: $color-reminder-orange;
@@ -84,6 +89,10 @@
 
 .greenValue {
   color: $color-reminder-green;
+}
+
+.yellowValue {
+  color: $color-reminder-yellow;
 }
 
 .orangeValue {

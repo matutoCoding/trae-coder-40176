@@ -20,6 +20,11 @@
   border: 2rpx solid rgba(47, 122, 104, 0.2);
 }
 
+.yellow {
+  background: linear-gradient(135deg, $color-reminder-yellow-bg 0%, #ffffff 100%);
+  border: 2rpx solid rgba(107, 163, 94, 0.25);
+}
+
 .orange {
   background: linear-gradient(135deg, $color-reminder-orange-bg 0%, #ffffff 100%);
   border: 2rpx solid rgba(232, 168, 56, 0.3);
@@ -42,6 +47,9 @@
 
 .green .levelBadge {
   background: $color-reminder-green;
+}
+.yellow .levelBadge {
+  background: $color-reminder-yellow;
 }
 .orange .levelBadge {
   background: $color-reminder-orange;
@@ -69,6 +77,9 @@
 
 .green .bigNumber {
   color: $color-reminder-green;
+}
+.yellow .bigNumber {
+  color: $color-reminder-yellow;
 }
 .orange .bigNumber {
   color: $color-reminder-orange;

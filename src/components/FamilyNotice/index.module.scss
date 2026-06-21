@@ -13,6 +13,10 @@
   border-left-color: $color-reminder-green;
 }
 
+.yellow {
+  border-left-color: $color-reminder-yellow;
+}
+
 .orange {
   border-left-color: $color-reminder-orange;
 }
@@ -102,6 +106,10 @@
 
 .greenText {
   color: $color-reminder-green;
+}
+
+.yellowText {
+  color: $color-reminder-yellow;
 }
 
 .orangeText {

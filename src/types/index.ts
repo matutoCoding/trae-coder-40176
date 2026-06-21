@@ -1,4 +1,4 @@
-export type ReminderLevel = 'green' | 'orange' | 'red'
+export type ReminderLevel = 'green' | 'yellow' | 'orange' | 'red'
 
 export interface Pharmacy {
   id: string

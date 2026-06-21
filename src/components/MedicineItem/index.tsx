@@ -42,6 +42,7 @@ const MedicineItem: React.FC<MedicineItemProps> = ({ medicine, pharmacy, onClick
             styles.value,
             styles.daysValue,
             level === 'green' && styles.greenValue,
+            level === 'yellow' && styles.yellowValue,
             level === 'orange' && styles.orangeValue,
             level === 'red' && styles.redValue
           )}

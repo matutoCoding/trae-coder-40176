@@ -12,6 +12,9 @@ const MedicineEditPage: React.FC = () => {
   const router = useRouter()
   const editId = router.params.id
   const isEdit = !!editId
+  const scanName = decodeURIComponent(router.params.scanName || '')
+  const scanQty = Number(router.params.scanQty || 0)
+  const scanDosage = Number(router.params.scanDosage || 0)
 
   const { medicines, pharmacies, addMedicine, updateMedicine, removeMedicine } = useAppStore()
 
@@ -35,16 +38,43 @@ const MedicineEditPage: React.FC = () => {
         setPharmacyId(medicine.pharmacyId)
         setNotes(medicine.notes || '')
       }
+    } else if (scanName) {
+      setName(scanName)
+      if (scanQty > 0) setLastPurchaseQuantity(scanQty)
+      if (scanDosage > 0) setDosagePerTime(scanDosage)
     }
-  }, [isEdit, editId, medicines])
+  }, [isEdit, editId, medicines, scanName, scanQty, scanDosage])
 
-  const handleScan = () => {
-    Taro.showModal({
-      title: '请店员扫码录入',
-      content: '请将手机交给药店店员，由店员扫描药品条码或处方单快速录入信息',
-      confirmText: '好的',
-      showCancel: false
-    })
+  const handleScan = async () => {
+    try {
+      const res = await Taro.scanCode({
+        scanType: ['barCode', 'qrCode'],
+        onlyFromCamera: false
+      })
+      const rawResult = res.result || ''
+      let parsedName = ''
+      let parsedQty = 0
+      let parsedDosage = 1
+      try {
+        const parsed = JSON.parse(rawResult)
+        parsedName = parsed.name || parsed.medicineName || ''
+        parsedQty = Number(parsed.quantity || parsed.lastPurchaseQuantity || 0)
+        parsedDosage = Number(parsed.dosagePerTime || parsed.dailyDosage || 1)
+      } catch {
+        if (rawResult && rawResult.length > 0) {
+          parsedName = rawResult
+          parsedQty = 30
+          parsedDosage = 1
+        }
+      }
+      if (parsedName) setName(parsedName)
+      if (parsedQty > 0) setLastPurchaseQuantity(parsedQty)
+      if (parsedDosage > 0) setDosagePerTime(parsedDosage)
+      Taro.showToast({ title: '扫码成功，已填入信息', icon: 'success' })
+    } catch (e) {
+      console.error('[MedicineEdit] scanCode error', e)
+      Taro.showToast({ title: '扫码取消或失败', icon: 'none' })
+    }
   }
 
   const handleSave = () => {
@@ -102,10 +132,10 @@ const MedicineEditPage: React.FC = () => {
       {!isEdit && (
         <View className={styles.scanCard}>
           <Text className={styles.scanIcon}>📱</Text>
-          <Text className={styles.scanTitle}>让店员扫码录入更方便</Text>
-          <Text className={styles.scanDesc}>把手机交给药店店员，一扫即可录入</Text>
+          <Text className={styles.scanTitle}>扫码录入更方便</Text>
+          <Text className={styles.scanDesc}>扫描药品条码，自动填入药品信息</Text>
           <Button className={styles.scanBtn} onClick={handleScan}>
-            找店员帮忙扫码
+            点击扫码
           </Button>
         </View>
       )}
@@ -222,7 +252,7 @@ const MedicineEditPage: React.FC = () => {
           <Picker
             mode="selector"
             range={pharmacies.map((p) => p.name)}
-            value={pharmacies.findIndex((p) => p.id === pharmacyId)}
+            value={Math.max(0, pharmacies.findIndex((p) => p.id === pharmacyId))}
             onChange={(e) => setPharmacyId(pharmacies[Number(e.detail.value)].id)}
           >
             <View className={styles.pharmacySelect}>

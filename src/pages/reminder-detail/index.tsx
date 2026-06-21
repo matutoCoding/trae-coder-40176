@@ -3,7 +3,7 @@ import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
 import { useAppStore } from '@/store'
-import { getLevelText, formatDate } from '@/utils/medicine'
+import { getLevelText, getLevelTipText, formatDate } from '@/utils/medicine'
 import BigButton from '@/components/BigButton'
 import type { Medicine, ReminderLevel } from '@/types'
 import styles from './index.module.scss'
@@ -11,7 +11,7 @@ import styles from './index.module.scss'
 const ReminderDetailPage: React.FC = () => {
   const router = useRouter()
   const medicineId = router.params.medicineId
-  const { medicines, getPharmacyById, getReminders } = useAppStore()
+  const { medicines, getPharmacyById, getReminders, updateMedicine } = useAppStore()
 
   const medicine = useMemo(
     () => medicines.find((m) => m.id === medicineId) as Medicine | undefined,
@@ -46,6 +46,12 @@ const ReminderDetailPage: React.FC = () => {
       confirmText: '已购买',
       success: (res) => {
         if (res.confirm) {
+          if (medicine) {
+            updateMedicine(medicine.id, {
+              lastPurchaseDate: new Date().toISOString().split('T')[0],
+              lastPurchaseQuantity: medicine.lastPurchaseQuantity
+            })
+          }
           Taro.showToast({ title: '已记录，感谢使用', icon: 'success' })
           setTimeout(() => Taro.navigateBack(), 1000)
         }
@@ -61,6 +67,13 @@ const ReminderDetailPage: React.FC = () => {
     )
   }
 
+  const levelColorMap = {
+    red: '#D94F4F',
+    orange: '#E8A838',
+    yellow: '#6BA35E',
+    green: '#2F7A68'
+  }
+
   return (
     <View className={styles.container}>
       <View className={classnames(styles.topCard, styles[level])}>
@@ -70,13 +83,7 @@ const ReminderDetailPage: React.FC = () => {
           <Text className={styles.bigNumber}>{remainingDays}</Text>
           <View className={styles.daysUnit}>天后需要补药</View>
         </View>
-        <Text className={styles.tipMessage}>
-          {level === 'red'
-            ? '药量即将用完，请尽快前往药店购买'
-            : level === 'orange'
-              ? '药量不多了，近几天记得去买哦'
-              : '药量还充足，记得提前准备就好'}
-        </Text>
+        <Text className={styles.tipMessage}>{getLevelTipText(level)}</Text>
       </View>
 
       <View className={styles.sectionCard}>
@@ -144,16 +151,9 @@ const ReminderDetailPage: React.FC = () => {
         <View className={styles.infoRow}>
           <Text className={styles.infoLabel}>剩余约</Text>
           <Text
-            className={classnames(styles.infoValue, {
-              [styles.bigNumber]: false
-            })}
+            className={styles.infoValue}
             style={{
-              color:
-                level === 'red'
-                  ? '#D94F4F'
-                  : level === 'orange'
-                    ? '#E8A838'
-                    : '#2F7A68',
+              color: levelColorMap[level],
               fontWeight: '700',
               fontSize: '36rpx'
             }}

@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
   const lastPharmacy = useMemo(() => getLastPharmacy(), [getLastPharmacy])
 
   const sortedReminders = useMemo(() => {
-    const levelOrder = { red: 0, orange: 1, green: 2 }
+    const levelOrder = { red: 0, orange: 1, yellow: 2, green: 3 }
     return [...reminders].sort((a, b) => {
       if (levelOrder[a.level] !== levelOrder[b.level]) {
         return levelOrder[a.level] - levelOrder[b.level]
@@ -28,19 +28,18 @@ const HomePage: React.FC = () => {
 
   const shouldBuyTodayValue = useMemo(() => {
     if (!mostUrgent) return { text: '暂不需要', color: 'green' }
-    if (mostUrgent.shouldBuyToday) {
-      if (mostUrgent.level === 'red') return { text: '该补药了', color: 'red' }
-      return { text: '准备补药', color: 'orange' }
-    }
+    const level = mostUrgent.level
+    if (level === 'red') return { text: '该补药了', color: 'red' }
+    if (level === 'orange') return { text: '准备补药', color: 'orange' }
+    if (level === 'yellow') return { text: '提前准备', color: 'yellow' }
     return { text: '还不用', color: 'green' }
   }, [mostUrgent])
 
   const minDays = useMemo(() => {
     if (sortedReminders.length === 0) return { value: '—', color: 'green' }
     const days = mostUrgent.remainingDays
-    if (days <= 1) return { value: `${days}天`, color: 'red' }
-    if (days <= 3) return { value: `${days}天`, color: 'orange' }
-    return { value: `${days}天`, color: 'green' }
+    const level = mostUrgent.level
+    return { value: `${days}天`, color: level }
   }, [sortedReminders, mostUrgent])
 
   const today = dayjs().format('MM月DD日 dddd')
@@ -64,6 +63,7 @@ const HomePage: React.FC = () => {
               className={classnames(
                 styles.thingValue,
                 shouldBuyTodayValue.color === 'green' && styles.greenValue,
+                shouldBuyTodayValue.color === 'yellow' && styles.yellowValue,
                 shouldBuyTodayValue.color === 'orange' && styles.orangeValue,
                 shouldBuyTodayValue.color === 'red' && styles.redValue
               )}
@@ -78,6 +78,7 @@ const HomePage: React.FC = () => {
               className={classnames(
                 styles.thingValue,
                 minDays.color === 'green' && styles.greenValue,
+                minDays.color === 'yellow' && styles.yellowValue,
                 minDays.color === 'orange' && styles.orangeValue,
                 minDays.color === 'red' && styles.redValue
               )}
@@ -89,12 +90,7 @@ const HomePage: React.FC = () => {
 
           <View className={styles.thingCard}>
             <Text
-              className={classnames(
-                styles.thingValue,
-                {
-                  [styles.greenValue]: true
-                }
-              )}
+              className={classnames(styles.thingValue, styles.greenValue)}
               style={{ fontSize: '30rpx' }}
             >
               {lastPharmacy ? lastPharmacy.name.slice(0, 6) + '...' : '暂无'}
