@@ -1,0 +1,181 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: 32rpx;
+  padding-bottom: 200rpx;
+}
+
+.topCard {
+  border-radius: 24rpx;
+  padding: 48rpx;
+  margin-bottom: 32rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 20rpx rgba(47, 122, 104, 0.12);
+}
+
+.green {
+  background: linear-gradient(135deg, $color-reminder-green-bg 0%, #ffffff 100%);
+  border: 2rpx solid rgba(47, 122, 104, 0.2);
+}
+
+.orange {
+  background: linear-gradient(135deg, $color-reminder-orange-bg 0%, #ffffff 100%);
+  border: 2rpx solid rgba(232, 168, 56, 0.3);
+}
+
+.red {
+  background: linear-gradient(135deg, $color-reminder-red-bg 0%, #ffffff 100%);
+  border: 2rpx solid rgba(217, 79, 79, 0.3);
+}
+
+.levelBadge {
+  display: inline-block;
+  padding: 12rpx 32rpx;
+  border-radius: $radius-round;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $color-text-white;
+  margin-bottom: 24rpx;
+}
+
+.green .levelBadge {
+  background: $color-reminder-green;
+}
+.orange .levelBadge {
+  background: $color-reminder-orange;
+}
+.red .levelBadge {
+  background: $color-reminder-red;
+}
+
+.medicineNameBig {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+  margin-bottom: 20rpx;
+}
+
+.daysDisplay {
+  margin: 24rpx 0;
+}
+
+.bigNumber {
+  font-size: 140rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.green .bigNumber {
+  color: $color-reminder-green;
+}
+.orange .bigNumber {
+  color: $color-reminder-orange;
+}
+.red .bigNumber {
+  color: $color-reminder-red;
+}
+
+.daysUnit {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin-top: 8rpx;
+}
+
+.tipMessage {
+  font-size: 32rpx;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-top: 20rpx;
+}
+
+.sectionCard {
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: $shadow-card;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.sectionIcon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.sectionTitle {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  padding: 16rpx 0;
+  border-bottom: 2rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.infoLabel {
+  font-size: 28rpx;
+  color: $color-text-tertiary;
+  width: 180rpx;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: 30rpx;
+  color: $color-text-primary;
+  font-weight: 500;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.tagYes {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+  background: $color-primary-bg;
+  color: $color-primary;
+  font-size: 26rpx;
+  font-weight: 500;
+  margin-left: 8rpx;
+}
+
+.notesBox {
+  margin-top: 16rpx;
+  padding: 24rpx;
+  background: $color-secondary-bg;
+  border-radius: $radius-lg;
+  font-size: 28rpx;
+  color: $color-text-secondary;
+  line-height: 1.7;
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 24rpx;
+}
+
+.bottomBtn {
+  flex: 1;
+}

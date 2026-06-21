@@ -1,0 +1,52 @@
+@use '@/styles/variables.scss' as *;
+
+.bigButton {
+  @include button-reset;
+  width: 100%;
+  height: 96rpx;
+  border-radius: $radius-button;
+  font-size: 34rpx;
+  font-weight: 600;
+  transition: all $transition-base;
+  white-space: nowrap;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.primary {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border: none;
+}
+
+.secondary {
+  background: $color-bg-card;
+  color: $color-primary;
+  border: 2rpx solid $color-primary;
+}
+
+.warning {
+  background: linear-gradient(135deg, $color-secondary 0%, $color-secondary-light 100%);
+  color: $color-text-white;
+  border: none;
+}
+
+.danger {
+  background: linear-gradient(135deg, $color-error 0%, $color-error-light 100%);
+  color: $color-text-white;
+  border: none;
+}
+
+.ghost {
+  background: transparent;
+  color: $color-text-secondary;
+  border: 2rpx solid $color-border;
+}
+
+.small {
+  height: 72rpx;
+  font-size: 28rpx;
+}

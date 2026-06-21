@@ -1,0 +1,230 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: 32rpx;
+  padding-bottom: 200rpx;
+}
+
+.tipCard {
+  background: $color-primary-bg;
+  border-radius: 20rpx;
+  padding: 24rpx 32rpx;
+  margin-bottom: 32rpx;
+  display: flex;
+  align-items: flex-start;
+}
+
+.tipIcon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.tipText {
+  font-size: 28rpx;
+  color: $color-primary-dark;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.formCard {
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  padding: 8rpx 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: $shadow-card;
+}
+
+.formItem {
+  padding: 32rpx 0;
+  border-bottom: 2rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.formLabel {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin-bottom: 16rpx;
+}
+
+.formRequired {
+  color: $color-error;
+  margin-right: 4rpx;
+}
+
+.formInput {
+  width: 100%;
+  height: 80rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  color: $color-text-primary;
+  box-sizing: border-box;
+}
+
+.formTextarea {
+  width: 100%;
+  min-height: 160rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 20rpx 24rpx;
+  font-size: 30rpx;
+  color: $color-text-primary;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.frequencyRow {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.frequencyBtn {
+  @include button-reset;
+  flex: 1;
+  height: 80rpx;
+  border-radius: $radius-md;
+  background: $color-bg-page;
+  color: $color-text-secondary;
+  font-size: 30rpx;
+  font-weight: 500;
+  border: 2rpx solid transparent;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.frequencyBtnActive {
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-color: $color-primary;
+  font-weight: 600;
+}
+
+.dosageRow {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.dosageControl {
+  display: flex;
+  align-items: center;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.dosageBtn {
+  @include button-reset;
+  width: 80rpx;
+  height: 80rpx;
+  background: transparent;
+  color: $color-primary;
+  font-size: 40rpx;
+  font-weight: 600;
+  border: none;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.dosageValue {
+  width: 100rpx;
+  text-align: center;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+}
+
+.dosageUnit {
+  font-size: 28rpx;
+  color: $color-text-secondary;
+}
+
+.pharmacySelect {
+  width: 100%;
+  min-height: 80rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 20rpx 24rpx;
+  font-size: 30rpx;
+  color: $color-text-primary;
+  box-sizing: border-box;
+}
+
+.pharmacyOption {
+  padding: 12rpx 0;
+  font-size: 28rpx;
+  color: $color-text-secondary;
+}
+
+.scanCard {
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: $shadow-card;
+  text-align: center;
+  border: 2rpx dashed $color-primary;
+}
+
+.scanIcon {
+  font-size: 64rpx;
+  margin-bottom: 16rpx;
+}
+
+.scanTitle {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: $color-primary;
+  margin-bottom: 8rpx;
+}
+
+.scanDesc {
+  font-size: 26rpx;
+  color: $color-text-secondary;
+  margin-bottom: 24rpx;
+}
+
+.scanBtn {
+  @include button-reset;
+  display: inline-flex;
+  height: 72rpx;
+  padding: 0 40rpx;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: 28rpx;
+  font-weight: 500;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.deleteBtn {
+  margin-top: 24rpx;
+}
