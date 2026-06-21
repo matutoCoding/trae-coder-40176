@@ -24,7 +24,8 @@ const MedicineEditPage: React.FC = () => {
     addMedicine,
     updateMedicine,
     removeMedicine,
-    getPurchaseRecordsByMedicine
+    getPurchaseRecordsByMedicine,
+    recordPurchase
   } = useAppStore()
 
   const [name, setName] = useState('')
@@ -35,6 +36,11 @@ const MedicineEditPage: React.FC = () => {
   const [pharmacyId, setPharmacyId] = useState(pharmacies[0]?.id || '')
   const [ownerId, setOwnerId] = useState(OWNER_SELF)
   const [notes, setNotes] = useState('')
+
+  const [showAddRecord, setShowAddRecord] = useState(false)
+  const [newRecordDate, setNewRecordDate] = useState(dayjs().format('YYYY-MM-DD'))
+  const [newRecordPharmacyId, setNewRecordPharmacyId] = useState(pharmacies[0]?.id || '')
+  const [newRecordQty, setNewRecordQty] = useState(30)
 
   const ownerOptions = useMemo(
     () => [
@@ -61,6 +67,8 @@ const MedicineEditPage: React.FC = () => {
         setPharmacyId(medicine.pharmacyId)
         setOwnerId(medicine.ownerId || OWNER_SELF)
         setNotes(medicine.notes || '')
+        setNewRecordPharmacyId(medicine.pharmacyId)
+        setNewRecordQty(medicine.lastPurchaseQuantity)
       }
     } else if (scanName) {
       setName(scanName)
@@ -132,6 +140,27 @@ const MedicineEditPage: React.FC = () => {
     }
 
     setTimeout(() => Taro.navigateBack(), 1000)
+  }
+
+  const handleAddRecord = () => {
+    if (!editId) return
+    if (!newRecordPharmacyId) {
+      Taro.showToast({ title: '请选择药店', icon: 'none' })
+      return
+    }
+    if (newRecordQty <= 0) {
+      Taro.showToast({ title: '请输入数量', icon: 'none' })
+      return
+    }
+    recordPurchase(editId, {
+      quantity: newRecordQty,
+      purchaseDate: newRecordDate,
+      pharmacyId: newRecordPharmacyId
+    })
+    setShowAddRecord(false)
+    setNewRecordDate(dayjs().format('YYYY-MM-DD'))
+    setNewRecordQty(30)
+    Taro.showToast({ title: '购药记录已添加', icon: 'success' })
   }
 
   const handleDelete = () => {
@@ -322,27 +351,101 @@ const MedicineEditPage: React.FC = () => {
         </View>
       </View>
 
-      {isEdit && purchaseRecords.length > 0 && (
+      {isEdit && (
         <View className={styles.recordsCard}>
           <View className={styles.recordsHead}>
             <Text className={styles.recordsIcon}>📋</Text>
-            <Text className={styles.recordsTitle}>最近购药记录</Text>
+            <Text className={styles.recordsTitle}>购药记录</Text>
           </View>
-          {purchaseRecords.slice(0, 5).map((record, idx) => (
-            <View key={record.id} className={styles.recordItem}>
-              <View className={styles.recordIndex}>
-                {purchaseRecords.length - idx}
+
+          {!showAddRecord && (
+            <View className={styles.addRecordBtn} onClick={() => setShowAddRecord(true)}>
+              <Text className={styles.addRecordIcon}>＋</Text>
+              <Text className={styles.addRecordText}>新增购药记录</Text>
+            </View>
+          )}
+
+          {showAddRecord && (
+            <View className={styles.newRecordForm}>
+              <View className={styles.newRecordField}>
+                <Text className={styles.newRecordLabel}>购买日期</Text>
+                <Picker
+                  mode="date"
+                  value={newRecordDate}
+                  end={dayjs().format('YYYY-MM-DD')}
+                  onChange={(e) => setNewRecordDate(e.detail.value)}
+                >
+                  <View className={styles.pharmacySelect}>
+                    {dayjs(newRecordDate).format('YYYY年MM月DD日')}
+                  </View>
+                </Picker>
               </View>
-              <View className={styles.recordMain}>
-                <Text className={styles.recordDate}>{formatDate(record.purchaseDate)}</Text>
-                <Text className={styles.recordDetail}>
-                  {record.pharmacyName || '未知药店'} · {record.quantity}片
-                </Text>
+              <View className={styles.newRecordField}>
+                <Text className={styles.newRecordLabel}>购药药店</Text>
+                <Picker
+                  mode="selector"
+                  range={pharmacies.map((p) => p.name)}
+                  value={Math.max(0, pharmacies.findIndex((p) => p.id === newRecordPharmacyId))}
+                  onChange={(e) => setNewRecordPharmacyId(pharmacies[Number(e.detail.value)].id)}
+                >
+                  <View className={styles.pharmacySelect}>
+                    {pharmacies.find((p) => p.id === newRecordPharmacyId)?.name || '请选择药店'}
+                  </View>
+                </Picker>
+              </View>
+              <View className={styles.newRecordField}>
+                <Text className={styles.newRecordLabel}>购买数量</Text>
+                <View className={styles.dosageRow}>
+                  <View className={styles.dosageControl}>
+                    <Button
+                      className={styles.dosageBtn}
+                      onClick={() => setNewRecordQty(Math.max(1, newRecordQty - 5))}
+                    >
+                      −
+                    </Button>
+                    <Text className={styles.dosageValue}>{newRecordQty}</Text>
+                    <Button
+                      className={styles.dosageBtn}
+                      onClick={() => setNewRecordQty(newRecordQty + 5)}
+                    >
+                      +
+                    </Button>
+                  </View>
+                  <Text className={styles.dosageUnit}>片/粒</Text>
+                </View>
+              </View>
+              <View className={styles.newRecordActions}>
+                <View className={styles.newRecordBtnWrap}>
+                  <BigButton type="secondary" onClick={() => setShowAddRecord(false)}>
+                    取消
+                  </BigButton>
+                </View>
+                <View className={styles.newRecordBtnWrap}>
+                  <BigButton onClick={handleAddRecord}>保存记录</BigButton>
+                </View>
               </View>
             </View>
-          ))}
-          {purchaseRecords.length > 5 && (
-            <Text className={styles.recordMore}>还有 {purchaseRecords.length - 5} 条记录</Text>
+          )}
+
+          {purchaseRecords.length > 0 && (
+            <View className={styles.recordsList}>
+              {purchaseRecords.slice(0, 5).map((record, idx) => (
+                <View key={record.id} className={styles.recordItem}>
+                  <View className={styles.recordIndex}>
+                    {purchaseRecords.length - idx}
+                  </View>
+                  <View className={styles.recordMain}>
+                    <Text className={styles.recordDate}>{formatDate(record.purchaseDate)}</Text>
+                    <Text className={styles.recordDetail}>
+                      {record.pharmacyName || '未知药店'} · {record.quantity}片
+                    </Text>
+                  </View>
+                </View>
+              ))}
+              {purchaseRecords.length > 5 && (
+                <Text className={styles.recordMore}>还有 {purchaseRecords.length - 5} 条记录</Text>
+              )}
+            </View>
           )}
         </View>
       )}

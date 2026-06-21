@@ -30,6 +30,7 @@ export interface PurchaseRecord {
   ownerId: string
   pharmacyId: string
   pharmacyName: string
+  medicineName: string
   quantity: number
   purchaseDate: string
 }

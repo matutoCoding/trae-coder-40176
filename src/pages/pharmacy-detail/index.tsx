@@ -3,17 +3,32 @@ import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { useAppStore } from '@/store'
 import BigButton from '@/components/BigButton'
+import { formatDate } from '@/utils/medicine'
 import styles from './index.module.scss'
 
 const PharmacyDetailPage: React.FC = () => {
   const router = useRouter()
   const pharmacyId = router.params.pharmacyId
+  const recordId = router.params.recordId
 
-  const { getPharmacyById } = useAppStore()
+  const { getPharmacyById, purchaseRecords } = useAppStore()
   const pharmacy = useMemo(() => (pharmacyId ? getPharmacyById(pharmacyId) : undefined), [
     getPharmacyById,
     pharmacyId
   ])
+
+  const refRecord = useMemo(() => {
+    if (!recordId) return null
+    return purchaseRecords.find((r) => r.id === recordId) || null
+  }, [recordId, purchaseRecords])
+
+  const recentRecords = useMemo(() => {
+    if (!pharmacyId) return []
+    return purchaseRecords
+      .filter((r) => r.pharmacyId === pharmacyId)
+      .sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
+      .slice(0, 5)
+  }, [pharmacyId, purchaseRecords])
 
   const callPharmacy = () => {
     if (pharmacy?.phone) {
@@ -101,6 +116,44 @@ const PharmacyDetailPage: React.FC = () => {
         </View>
         {pharmacy.notes && <View className={styles.notesBox}>温馨提示：{pharmacy.notes}</View>}
       </View>
+
+      {refRecord && (
+        <View className={styles.sectionCard}>
+          <View className={styles.sectionHead}>
+            <Text className={styles.sectionIcon}>🛒</Text>
+            <Text className={styles.sectionTitle}>推荐来源</Text>
+          </View>
+          <View className={styles.infoRow}>
+            <Text className={styles.infoLabel}>药品名称</Text>
+            <Text className={styles.infoValue}>{refRecord.medicineName}</Text>
+          </View>
+          <View className={styles.infoRow}>
+            <Text className={styles.infoLabel}>购买日期</Text>
+            <Text className={styles.infoValue}>{formatDate(refRecord.purchaseDate)}</Text>
+          </View>
+          <View className={styles.infoRow}>
+            <Text className={styles.infoLabel}>购买数量</Text>
+            <Text className={styles.infoValue}>{refRecord.quantity} 片</Text>
+          </View>
+        </View>
+      )}
+
+      {recentRecords.length > 0 && (
+        <View className={styles.sectionCard}>
+          <View className={styles.sectionHead}>
+            <Text className={styles.sectionIcon}>📜</Text>
+            <Text className={styles.sectionTitle}>近期购药记录</Text>
+          </View>
+          {recentRecords.map((record) => (
+            <View key={record.id} className={styles.infoRow}>
+              <Text className={styles.infoLabel}>{formatDate(record.purchaseDate)}</Text>
+              <Text className={styles.infoValue}>
+                {record.medicineName} · {record.quantity}片
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       <View className={styles.bottomBar}>
         <View className={styles.bottomBtn}>

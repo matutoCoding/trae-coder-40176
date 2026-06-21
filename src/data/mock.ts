@@ -79,6 +79,7 @@ export const mockPurchaseRecords: PurchaseRecord[] = [
     ownerId: 'e1',
     pharmacyId: 'p1',
     pharmacyName: '康宁大药房（文化路店）',
+    medicineName: '苯磺酸氨氯地平片',
     quantity: 30,
     purchaseDate: dayjs().subtract(28, 'day').format('YYYY-MM-DD')
   },
@@ -88,6 +89,7 @@ export const mockPurchaseRecords: PurchaseRecord[] = [
     ownerId: 'e1',
     pharmacyId: 'p1',
     pharmacyName: '康宁大药房（文化路店）',
+    medicineName: '盐酸二甲双胍缓释片',
     quantity: 60,
     purchaseDate: dayjs().subtract(25, 'day').format('YYYY-MM-DD')
   },
@@ -97,6 +99,7 @@ export const mockPurchaseRecords: PurchaseRecord[] = [
     ownerId: 'self',
     pharmacyId: 'p2',
     pharmacyName: '仁德堂药店（中心店）',
+    medicineName: '阿托伐他汀钙片',
     quantity: 28,
     purchaseDate: dayjs().subtract(5, 'day').format('YYYY-MM-DD')
   }

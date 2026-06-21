@@ -22,6 +22,10 @@ const STORAGE_KEYS = {
   purchaseRecords: 'app_purchase_records'
 }
 
+function genId(prefix: string): string {
+  return `${prefix}${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
+
 function loadStorage<T>(key: string, fallback: T): T {
   try {
     const raw = Taro.getStorageSync(key)
@@ -161,18 +165,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   addMedicine: (medicine) => {
     const newMed: Medicine = {
       ...medicine,
-      id: `m${Date.now()}`
+      id: genId('m')
     }
     const newMedicines = [...get().medicines, newMed]
     saveStorage(STORAGE_KEYS.medicines, newMedicines)
 
     const pharmacy = get().pharmacies.find((p) => p.id === medicine.pharmacyId)
     const newRecord: PurchaseRecord = {
-      id: `r${Date.now()}`,
+      id: genId('r'),
       medicineId: newMed.id,
       ownerId: medicine.ownerId,
       pharmacyId: medicine.pharmacyId,
       pharmacyName: pharmacy?.name || '',
+      medicineName: medicine.name,
       quantity: medicine.lastPurchaseQuantity,
       purchaseDate: medicine.lastPurchaseDate
     }
@@ -206,11 +211,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (purchaseChanged) {
       const pharmacy = get().pharmacies.find((p) => p.id === newMed.pharmacyId)
       const newRecord: PurchaseRecord = {
-        id: `r${Date.now()}`,
+        id: genId('r'),
         medicineId: newMed.id,
         ownerId: newMed.ownerId,
         pharmacyId: newMed.pharmacyId,
         pharmacyName: pharmacy?.name || '',
+        medicineName: newMed.name,
         quantity: newMed.lastPurchaseQuantity,
         purchaseDate: newMed.lastPurchaseDate
       }
@@ -273,11 +279,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     const pharmacy = get().pharmacies.find((p) => p.id === data.pharmacyId)
     const newRecord: PurchaseRecord = {
-      id: `r${Date.now()}`,
+      id: genId('r'),
       medicineId,
       ownerId: med.ownerId,
       pharmacyId: data.pharmacyId,
       pharmacyName: pharmacy?.name || '',
+      medicineName: med.name,
       quantity: data.quantity,
       purchaseDate: data.purchaseDate
     }
@@ -345,7 +352,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   bindElder: (elder) => {
-    const newElders = [...get().elders, { ...elder, id: `e${Date.now()}` }]
+    const newElders = [...get().elders, { ...elder, id: genId('e') }]
     saveStorage(STORAGE_KEYS.elders, newElders)
     const familyNotices = buildFamilyNotices(
       newElders,

@@ -6,6 +6,7 @@ import classnames from 'classnames'
 import { useAppStore } from '@/store'
 import ReminderCard from '@/components/ReminderCard'
 import BigButton from '@/components/BigButton'
+import { formatDate } from '@/utils/medicine'
 import styles from './index.module.scss'
 
 const HomePage: React.FC = () => {
@@ -50,7 +51,11 @@ const HomePage: React.FC = () => {
   }
 
   const goPharmacyDetail = () => {
-    if (lastPharmacy) {
+    if (lastPharmacy && lastRecord) {
+      Taro.navigateTo({
+        url: `/pages/pharmacy-detail/index?pharmacyId=${lastPharmacy.id}&recordId=${lastRecord.id}`
+      })
+    } else if (lastPharmacy) {
       Taro.navigateTo({ url: `/pages/pharmacy-detail/index?pharmacyId=${lastPharmacy.id}` })
     } else {
       Taro.showToast({ title: '暂无购药记录', icon: 'none' })
@@ -110,6 +115,11 @@ const HomePage: React.FC = () => {
                 <Text className={styles.clickHint}>（点击查看）</Text>
               )}
             </Text>
+            {lastRecord && (
+              <Text className={styles.pharmacySubInfo}>
+                {lastRecord.medicineName} · {formatDate(lastRecord.purchaseDate)}
+              </Text>
+            )}
           </View>
         </View>
       </View>

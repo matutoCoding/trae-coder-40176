@@ -11,7 +11,8 @@ import styles from './index.module.scss'
 const ReminderDetailPage: React.FC = () => {
   const router = useRouter()
   const medicineId = router.params.medicineId
-  const { medicines, getPharmacyById, getReminders, updateMedicine } = useAppStore()
+  const noticeId = router.params.noticeId
+  const { medicines, getPharmacyById, getReminders, recordPurchase, updateNoticeStatus } = useAppStore()
 
   const medicine = useMemo(
     () => medicines.find((m) => m.id === medicineId) as Medicine | undefined,
@@ -42,17 +43,19 @@ const ReminderDetailPage: React.FC = () => {
   const markBought = () => {
     Taro.showModal({
       title: '确认已买药？',
-      content: '确认后系统将重新计算剩余药量',
+      content: '确认后系统将记录一次购买，重新计算剩余药量',
       confirmText: '已购买',
       success: (res) => {
-        if (res.confirm) {
-          if (medicine) {
-            updateMedicine(medicine.id, {
-              lastPurchaseDate: new Date().toISOString().split('T')[0],
-              lastPurchaseQuantity: medicine.lastPurchaseQuantity
-            })
+        if (res.confirm && medicine) {
+          recordPurchase(medicine.id, {
+            quantity: medicine.lastPurchaseQuantity,
+            purchaseDate: new Date().toISOString().split('T')[0],
+            pharmacyId: medicine.pharmacyId
+          })
+          if (noticeId) {
+            updateNoticeStatus(noticeId, 'willBuy')
           }
-          Taro.showToast({ title: '已记录，感谢使用', icon: 'success' })
+          Taro.showToast({ title: '已记录购买，药量已更新', icon: 'success' })
           setTimeout(() => Taro.navigateBack(), 1000)
         }
       }

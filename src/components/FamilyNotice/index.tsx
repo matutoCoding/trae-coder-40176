@@ -25,7 +25,9 @@ const FamilyNotice: React.FC<FamilyNoticeProps> = ({ notice, onUpdateStatus }) =
 
   const handleBuy = () => {
     onUpdateStatus(notice.id, 'willBuy')
-    Taro.showToast({ title: '已标记准备购买', icon: 'success' })
+    Taro.navigateTo({
+      url: `/pages/reminder-detail/index?medicineId=${notice.medicineId}&noticeId=${notice.id}`
+    })
   }
 
   const handleCallback = () => {
